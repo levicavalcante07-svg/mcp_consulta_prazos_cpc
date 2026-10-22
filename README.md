@@ -6,6 +6,12 @@ LLMs costumam errar contas com datas, então o cálculo fica numa tool determin�
 
 Funciona com qualquer cliente MCP: Claude Code, Claude Desktop ou um agente próprio (LangChain, por exemplo).
 
+**Servidor público:** `https://mcp-consulta-prazos-cpc-nine.vercel.app/mcp`. Para usar sem instalar nada:
+
+```powershell
+claude mcp add --transport http prazos https://mcp-consulta-prazos-cpc-nine.vercel.app/mcp
+```
+
 ## Instalação
 
 ```powershell
@@ -58,6 +64,12 @@ claude mcp add --transport http prazos https://<seu-projeto>.vercel.app/mcp
 ```
 
 O servidor publicado é aberto (sem autenticação), e o limite de requisições do DJEN é dividido entre todos os usuários.
+
+Nos testes de 22/10/2026, a partir da Vercel:
+- o DJEN funcionou;
+- o DataJud respondeu sempre "limite de requisições" (HTTP 429), provavelmente porque os IPs da Vercel são compartilhados com muitos outros usuários. Rodando localmente, ele funciona.
+
+Como o DataJud é só a fonte alternativa, o levantamento de prazos continua funcionando.
 
 ## O que o servidor expõe
 
