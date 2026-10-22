@@ -218,3 +218,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Chaves locais (opcional: DATAJUD_API_KEY)
+keys.env

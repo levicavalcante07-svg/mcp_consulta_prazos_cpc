@@ -1,0 +1,5 @@
+﻿# Versões testadas em out/2026 (fastmcp 3.4). O fastmcp 4.x ainda não foi testado com este servidor.
+fastmcp>=3,<4
+httpx
+python-dotenv
+pytest
