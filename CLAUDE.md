@@ -12,12 +12,13 @@ Este repositório tem só o servidor. A versão completa, com um agente LangChai
 
 ```powershell
 .venv\Scripts\activate
-pip install -r requirements.txt
+pip install -r requirements-dev.txt               # requirements.txt (servidor) + pytest
 python -m pytest tests -q                         # todos os testes
 python -m pytest tests -q -k recesso              # um teste
 python teste_cliente.py                           # servidor ponta a ponta via fastmcp.Client, sem LLM
 fastmcp call servidor_prazos.py calcular_prazo data_inicio=2026-12-18 dias=15
 python servidor_prazos.py --http                  # servidor em http://127.0.0.1:8000/mcp
+uvicorn app:app --port 8000                       # como roda na Vercel (stateless)
 ```
 
 Use `python -m pytest` em vez de `pytest`: o `-m` coloca a raiz no `sys.path`, e os testes importam `prazos`.
@@ -32,12 +33,15 @@ Use `python -m pytest` em vez de `pytest`: o `-m` coloca a raiz no `sys.path`, e
 - Na contagem só dias úteis são contados. Por isso o vencimento sempre cai em dia útil, e a prorrogação do art. 224, §1º, não precisa de código próprio.
 - O raciocínio jurídico (qual ato, quem pratica, se há dobro, se o prazo corre da publicação ou de uma citação futura) fica num lugar só: `INSTRUCOES` em `servidor_prazos.py`. Ela chega aos clientes de três formas: como `instructions` do `FastMCP` (o Claude Code recebe ao conectar), pelo resource `prazos://instrucoes` (instruções + tabela, usado como prompt de sistema por agentes) e embutida nos dois prompts. Ao corrigir uma análise jurídica errada do LLM, o ajuste costuma ser ali, não no código.
 
+- Hospedagem: `app.py` expõe `mcp.http_app(stateless_http=True)` para a Vercel, que detecta o `app` sozinha. O `vercel.json` fixa a região `gru1` (São Paulo) e tira os testes do pacote. A Vercel instala só o `requirements.txt`, por isso dependências de desenvolvimento ficam no `requirements-dev.txt`. Em serverless não há sessão entre requisições, então nada pode depender de estado em memória.
+
 ## Armadilhas
 
 - O servidor roda em stdio, e stdout é o canal do protocolo. Nunca use `print()` em `servidor_prazos.py`; use `logging`.
 - Mantenha `fastmcp>=3,<4`. A versão 4.x não foi testada, e no repositório do curso ela puxa `mcp` 2.x, que quebra o `langchain-mcp-adapters`.
 - Argumentos de prompts MCP são sempre strings.
 - Clientes stdio não repassam o ambiente deles ao servidor. Por isso `servidor_prazos.py` carrega o `keys.env` por conta própria (opcional, só para `DATAJUD_API_KEY`).
+- O DJEN recusa IPs de fora do Brasil. Por isso a região da Vercel não pode voltar ao padrão (`iad1`, EUA).
 - O DJEN e o DataJud têm limite de requisições. Evite testes ao vivo em laço; espere cerca de 1 minuto após um 429.
 - O feriado de 20/11 é nacional desde a Lei 14.759/2023. Feriados locais não são embutidos: entram por `feriados_extras`.
 - `.mcp.json`, `keys.env`, `exercicio - aulos/` e o PDF da aula são arquivos locais, fora do git. O material da aula fica no repositório do curso.

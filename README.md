@@ -47,6 +47,18 @@ Depois, é só perguntar: *"quais os prazos do processo 0001234-21.2026.8.04.000
 
 **Clientes que se conectam por URL:** suba o servidor com `python servidor_prazos.py --http`; ele fica em `http://127.0.0.1:8000/mcp`. Ele escuta só nesta máquina e não tem autenticação.
 
+## Hospedagem na Vercel
+
+O repositório já vem pronto para a Vercel. O `app.py` expõe o servidor como aplicação ASGI em `/mcp`, no modo stateless, e o `vercel.json` fixa a região em São Paulo (`gru1`). A região importa porque o DJEN recusa acessos de fora do Brasil.
+
+Para publicar: entre em vercel.com com o GitHub, use *Add New → Project*, importe este repositório e faça o deploy. Depois conecte os clientes pela URL publicada:
+
+```powershell
+claude mcp add --transport http prazos https://<seu-projeto>.vercel.app/mcp
+```
+
+O servidor publicado é aberto (sem autenticação), e o limite de requisições do DJEN é dividido entre todos os usuários.
+
 ## O que o servidor expõe
 
 - **Tools:**
@@ -87,10 +99,13 @@ Depois, é só perguntar: *"quais os prazos do processo 0001234-21.2026.8.04.000
 
 ## Desenvolvimento
 
+Instale também as dependências de desenvolvimento: `pip install -r requirements-dev.txt`.
+
 | Comando | O que faz |
 |---|---|
 | `python -m pytest tests -q` | Testa a lógica (sem MCP, sem LLM, sem rede: as APIs são simuladas) |
 | `python teste_cliente.py` | Chama tools, resources e prompts do servidor via `fastmcp.Client` (sem LLM) |
+| `uvicorn app:app --port 8000` | Roda como na Vercel (HTTP stateless em `/mcp`) |
 | `fastmcp list servidor_prazos.py` | Lista as tools |
 | `fastmcp call servidor_prazos.py calcular_prazo data_inicio=2026-12-18 dias=15` | Chama uma tool pela linha de comando |
 
